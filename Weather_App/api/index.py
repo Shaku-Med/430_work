@@ -63,4 +63,5 @@ def api_weather():
     return jsonify({"error": "City not provided"}), 400
 
 if __name__ == "__main__":
-    app.run(debug=True)
+    # app.run(debug=True)
+    app.run()
