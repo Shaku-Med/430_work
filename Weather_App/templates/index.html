@@ -2,61 +2,79 @@
 <html lang="en">
   <head>
     <meta charset="UTF-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
     <title>Weather App</title>
     <script src="https://cdn.tailwindcss.com"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode-generator/1.4.4/qrcode.min.js"></script>
+    <script>
+      tailwind.config = {
+        darkMode: 'class'
+      }
+    </script>
   </head>
-  <body class="flex items-center justify-center min-h-screen bg-gray-200">
-    <div class="bg-white p-6 rounded-lg shadow-lg w-full max-w-md">
-      <h1 class="text-2xl font-bold text-center text-gray-700">
+  <body class="flex items-center justify-center min-h-screen bg-gray-200 dark:bg-gray-900 transition-colors duration-300">
+    <div class="absolute top-4 right-4 flex items-center space-x-2">
+      <select id="theme-select" class="p-2 rounded bg-gray-300 dark:bg-gray-700 text-gray-800 dark:text-white">
+        <option value="system">System</option>
+        <option value="light">Light</option>
+        <option value="dark">Dark</option>
+      </select>
+    </div>
+
+    <div class="bg-white dark:bg-gray-800 p-6 rounded-lg shadow-lg w-full max-w-md transition-colors duration-300">
+      <h1 class="text-2xl font-bold text-center text-gray-700 dark:text-white">
         🌤 Weather App
       </h1>
+
+      <div class="flex items-center justify-center p-2">
+        <div id="qr-code"></div>
+      </div>
 
       <form method="POST" class="mt-4">
         <input
           type="text"
           name="city"
           placeholder="Enter city name"
-          class="w-full p-2 border border-gray-300 rounded-md focus:ring focus:ring-blue-300"
+          class="w-full p-2 border border-gray-300 dark:border-gray-600 rounded-md focus:ring focus:ring-blue-300 dark:bg-gray-700 dark:text-white"
           required
         />
         <button
           type="submit"
-          class="mt-2 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600"
+          class="mt-2 w-full bg-blue-500 text-white p-2 rounded-md hover:bg-blue-600 dark:bg-blue-700 dark:hover:bg-blue-600"
         >
           Get Weather
         </button>
       </form>
 
       {% if data %}
-      <div class="mt-6 p-4 bg-blue-50 rounded-md shadow-md">
-        <h2 class="text-lg font-semibold text-blue-700">
+      <div class="mt-6 p-4 bg-blue-50 dark:bg-blue-900 rounded-md shadow-md">
+        <h2 class="text-lg font-semibold text-blue-700 dark:text-blue-300">
           {{ data.weather.name }}
         </h2>
-        <p class="text-gray-600">
+        <p class="text-gray-600 dark:text-gray-300">
           Current Time: <span class="font-medium">{{ data.time }}</span>
         </p>
-        <p class="text-gray-600">
+        <p class="text-gray-600 dark:text-gray-300">
           Temperature:
           <span class="font-medium">{{ data.weather.main.temp }}°C</span>
         </p>
-        <p class="text-gray-600">
+        <p class="text-gray-600 dark:text-gray-300">
           Humidity:
           <span class="font-medium">{{ data.weather.main.humidity }}%</span>
         </p>
-        <p class="text-gray-600 capitalize">
+        <p class="text-gray-600 dark:text-gray-300 capitalize">
           Condition:
           <span class="font-medium"
             >{{ data.weather.weather[0].description }}</span
           >
         </p>
 
-        <h3 class="mt-4 text-md font-semibold text-gray-700">
+        <h3 class="mt-4 text-md font-semibold text-gray-700 dark:text-white">
           5-Day Forecast:
         </h3>
         <ul>
           {% for forecast in data.forecast %}
-          <li class="text-gray-600">
+          <li class="text-gray-600 dark:text-gray-300">
             📅 {{ forecast.dt_txt }} - 🌡 {{ forecast.main.temp }}°C - {{
             forecast.weather[0].description }}
           </li>
@@ -65,5 +83,61 @@
       </div>
       {% endif %}
     </div>
+
+    <script>
+      function generateQRCode() {
+          const currentUrl = window.location.href;
+          
+          if(!currentUrl.includes(`?qr=true`)){
+            const qr = qrcode(0, 'M');
+            qr.addData(`${currentUrl}/?qr=true`);
+            qr.make();
+            
+            const qrCodeDiv = document.getElementById('qr-code');
+            qrCodeDiv.innerHTML = qr.createImgTag(5);
+          }
+      }
+
+      const themeSelect = document.getElementById('theme-select');
+      const html = document.documentElement;
+
+      function applyTheme(theme) {
+        switch(theme) {
+          case 'light':
+            html.classList.remove('dark');
+            break;
+          case 'dark':
+            html.classList.add('dark');
+            break;
+          case 'system':
+          default:
+            if (window.matchMedia && window.matchMedia('(prefers-color-scheme: dark)').matches) {
+              html.classList.add('dark');
+            } else {
+              html.classList.remove('dark');
+            }
+            break;
+        }
+      }
+
+      const savedTheme = localStorage.getItem('theme') || 'system';
+      themeSelect.value = savedTheme;
+      applyTheme(savedTheme);
+
+      themeSelect.addEventListener('change', (e) => {
+        const selectedTheme = e.target.value;
+        localStorage.setItem('theme', selectedTheme);
+        applyTheme(selectedTheme);
+      });
+
+      window.matchMedia('(prefers-color-scheme: dark)').addEventListener('change', () => {
+        if (themeSelect.value === 'system') {
+          applyTheme('system');
+        }
+      });
+
+      window.onload = generateQRCode;
+  </script>
+
   </body>
 </html>
