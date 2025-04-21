@@ -1,0 +1,100 @@
+## Text formation of the UML diagram for help...
+
+classDiagram
+    class User {
+        -int userId
+        -string username
+        -string email
+        -string password
+        -bool isActive
+        +register()
+        +login()
+        +logout()
+        +updateProfile()
+        +assignTask(Task)
+        +createTask(Task)
+    }
+    
+    class Task {
+        -int taskId
+        -string title
+        -string description
+        -Priority priority
+        -DateTime dueDate
+        -User assignedTo
+        -User createdBy
+        -DateTime createdAt
+        -DateTime updatedAt
+        +create()
+        +update()
+        +delete()
+        +changeStatus(Column)
+        +assignTo(User)
+        +setPriority(Priority)
+    }
+    
+    class Board {
+        -int boardId
+        -string name
+        -string description
+        -DateTime createdAt
+        -List~Column~ columns
+        -List~User~ members
+        +create()
+        +update()
+        +delete()
+        +addColumn(Column)
+        +removeColumn(Column)
+        +addMember(User)
+        +removeMember(User)
+    }
+    
+    class Column {
+        -int columnId
+        -string name
+        -int position
+        -List~Task~ tasks
+        +create()
+        +update()
+        +delete()
+        +addTask(Task)
+        +removeTask(Task)
+        +moveTask(Task, Column)
+    }
+    
+    class Notification {
+        -int notificationId
+        -string message
+        -bool isRead
+        -DateTime createdAt
+        -User recipient
+        +create()
+        +markAsRead()
+        +delete()
+    }
+    
+    class Priority {
+        <<enumeration>>
+        LOW
+        MEDIUM
+        HIGH
+        URGENT
+    }
+    
+    class AccessControl {
+        +hasPermission(User, Action, Resource)
+        +grantPermission(User, Action, Resource)
+        +revokePermission(User, Action, Resource)
+    }
+    
+    User "1" --o "0..*" Task : creates
+    User "1" --o "0..*" Task : assigned to
+    User "1" --o "0..*" Board : owns
+    User "1..*" --o "0..*" Board : member of
+    Board "1" *-- "1..*" Column : contains
+    Column "1" *-- "0..*" Task : contains
+    Task -- Priority : has
+    User "1" -- "0..*" Notification : receives
+    AccessControl -- User : manages permissions
+    AccessControl -- Task : controls access
+    AccessControl -- Board : controls access

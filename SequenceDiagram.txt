@@ -1,0 +1,35 @@
+sequenceDiagram
+    actor User
+    participant UI as User Interface
+    participant TM as TaskManager
+    participant TC as TaskController
+    participant T as Task
+    participant SN as NotificationService
+    participant SC as Column:Source(To Do)
+    participant DC as Column:Destination(In Progress)
+    participant AC as AccessControl
+    
+    User->>UI: Drag task from "To Do" to "In Progress"
+    UI->>TM: moveTask(taskId, sourceColumnId, destinationColumnId)
+    TM->>AC: checkPermission(user, MOVE_TASK, taskId)
+    AC-->>TM: permissionGranted
+    
+    TM->>TC: initiateTaskMove(taskId, sourceColumnId, destinationColumnId)
+    TC->>T: getTaskDetails(taskId)
+    T-->>TC: taskDetails
+    
+    TC->>SC: removeTask(taskId)
+    SC-->>TC: taskRemoved
+    
+    TC->>DC: addTask(task)
+    DC-->>TC: taskAdded
+    
+    TC->>T: updateStatus("In Progress")
+    T-->>TC: statusUpdated
+    
+    TC->>SN: createNotification(task.assignedTo, "Task moved to In Progress")
+    SN-->>TC: notificationCreated
+    
+    TC-->>TM: taskMoveComplete
+    TM-->>UI: updateSuccessful
+    UI-->>User: Display updated board with task in "In Progress" column
